@@ -44,6 +44,7 @@ class Game:
         self.load_data('level1.txt')
         self.all_sprites = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
+        self.all_mobs = pg.sprite.Group()
         # instantiate player here
         
         self.wall = Wall(self,5,0)
@@ -52,6 +53,8 @@ class Game:
             for col, tile in enumerate(tiles):
                 if tile == '1':
                     Wall(self, col, row)
+                if tile == 'M':
+                    Mob(self, col, row)
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
                 if tile == 'P':
@@ -82,6 +85,7 @@ class Game:
         #instantiate Font class
         font = pg.font.Font(font_name, size)
         text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
         text_rect.midtop = (x,y)
         self.screen.blit(text_surface, text_rect)
 
@@ -90,6 +94,7 @@ class Game:
         self.all_sprites.draw(self.screen)
         self.draw_text("Frames per second: " + str(floor(1/self.dt)), 24, WHITE, WIDTH/2, HEIGHT/4)
         pg.display.flip()
+
 if __name__ == "__main__":
     g = Game()
 
