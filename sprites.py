@@ -66,6 +66,7 @@ class Player(Sprite):
         # accounting for the status pf the player
         self.jumping = False
         self.moving = False
+        self.coins = 0
         print("player instance created")
         self.load_images()
     # gets player input
@@ -114,6 +115,10 @@ class Player(Sprite):
         self.animate()
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
+        hits = pg.sprite.spritecollide(self, self.game.all_coins, True)
+        if hits:
+            self.coins+= 1
+            print(f"I have {self.coins} coins")
         self.hit_rect.centerx = self.pos.x
         collide_with_walls(self, self.game.all_walls, 'x')
         self.hit_rect.centery = self.pos.y
@@ -135,12 +140,12 @@ class Mob(Sprite):
         self.rect.x = x
         self.rect.y = y
         # self.vx, self.vy = 0,0
-        self.speed = -100
+        self.speed = 100
         self.vel = vec(1,0)
         self.pos = vec(x,y) * TILESIZE
         # self.x = x * TILESIZE
         # self.y = y * TILESIZE
-        self.hit_rect = PLAYER_HIT_RECT
+        self.hit_rect = MOB_HIT_RECT
         # animation stuff
         # start with current frames and last update at zero so we can cycle through animations
         self.current_frame = 0
@@ -148,7 +153,7 @@ class Mob(Sprite):
         # accounting for the states of the player
         self.jumping = False
         self.moving = False
-        print("player instance created")
+        print("mob instance created")
         self.load_images()
     def load_images(self):
             self.idle_frames = [self.spritesheet.get_image(64,0, TILESIZE,TILESIZE), self.spritesheet.get_image(96,0, TILESIZE,TILESIZE)]
@@ -171,16 +176,22 @@ class Mob(Sprite):
                     self.image = self.moving_frames[self.current_frame]
                     self.rect = self.image.get_rect()
                     self.rect.bottom = bottom
+
+    def follow(self, obj):
+        # make the player follow the given object
+        direction = vec(obj.rect.centerx - self.rect.centerx, obj.rect.centery - self.rect.centery)
+        if direction.length() > 0:
+            direction = direction.normalize()
+        self.vel = direction
+
     def update(self):
         self.animate()
-        
+        self.follow(self.game.player)
+        self.pos += self.vel * self.speed * self.game.dt
         self.hit_rect.centerx = self.pos.x
-        if collide_with_walls(self, self.game.all_walls, 'x'):
-                print("x collide")
-                self.speed *= -1
+        collide_with_walls(self, self.game.all_walls, 'x')
         self.hit_rect.centery = self.pos.y
         collide_with_walls(self, self.game.all_walls, 'y')
-        self.pos += self.vel * self.speed * self.game.dt
         self.rect.center = self.pos
         
 
@@ -200,5 +211,20 @@ class Wall(Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
         print("wall instance created")
+
+class Coin(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_coins
+        Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        pg.draw.circle(self.image,GOLD, (16,16), TILESIZE/2)
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+       
+        self.vel = vec(0,0)
+        self.pos = vec(x,y) *TILESIZE
+        self.rect.center = self.pos
+        print("coin instance created")
 
     # new object type Wall that is green
