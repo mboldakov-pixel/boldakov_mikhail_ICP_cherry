@@ -184,15 +184,15 @@ class Mob(Sprite):
             direction = direction.normalize()
         self.vel = direction
 
-    def update(self):
-        self.animate()
-        self.follow(self.game.player)
-        self.pos += self.vel * self.speed * self.game.dt
-        self.hit_rect.centerx = self.pos.x
-        collide_with_walls(self, self.game.all_walls, 'x')
-        self.hit_rect.centery = self.pos.y
-        collide_with_walls(self, self.game.all_walls, 'y')
-        self.rect.center = self.pos
+    # def update(self):
+    #     self.animate()
+    #     self.follow(self.game.player)
+    #     self.pos += self.vel * self.speed * self.game.dt
+    #     self.hit_rect.centerx = self.pos.x
+    #     collide_with_walls(self, self.game.all_walls, 'x')
+    #     self.hit_rect.centery = self.pos.y
+    #     collide_with_walls(self, self.game.all_walls, 'y')
+    #     self.rect.center = self.pos
         
 
 class Wall(Sprite):

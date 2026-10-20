@@ -9,9 +9,9 @@ Process - input processed (direction of control, magnitude)
 Output - Draw new frames pixels, sound, haptics (senses)
 (Store)
 
-GOALS: 
+GOALS: Collect Coins, and evade enemies
 RULES: time limit
-FEEDBACK:
+FEEDBACK: Damage taken from dragons,maybe if there are enough dragons touching the character you have to restart.
 FREEDOM: Can't go into walls, shoot fire 
 '''
 
@@ -33,12 +33,32 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
         self.playing = True
+        self.score = 0
+        self.highscore = 0
 
     def load_data(self, map):
         self.game_dir = path.dirname(__file__)
+        self.game_save_file = path.join(self.game_dir, "highscore.txt")
         self.img_dir = path.join(self.game_dir, 'images')
         self.snd_dir = path.join(self.game_dir, 'sounds')
         self.map = Map(path.join(self.game_dir, map))
+
+        # want to see if file exists and create if not
+        try:
+            with open(self.game_save_file, "x", encoding ="utf=8") as file:
+                file.write(str(self.highscore))
+            print("File created succesfully.")
+        except FileExistsError:
+            print("File already exists, No action taken.")
+
+        #open file and try to set high score with except set high score to zero
+        with open(self.game_save_file, "r") as f:
+            try:
+                self.highscore = int(f.read())
+                print("high score set!")
+            except:
+                self.higshcore = 0
+                print("high score is zero")
 
     def new(self):
         self.load_data('level1.txt')
