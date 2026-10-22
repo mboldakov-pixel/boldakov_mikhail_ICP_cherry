@@ -40,7 +40,10 @@ class Game:
         self.game_dir = path.dirname(__file__)
         self.game_save_file = path.join(self.game_dir, "highscore.txt")
         self.img_dir = path.join(self.game_dir, 'images')
+        #sound handling
         self.snd_dir = path.join(self.game_dir, 'sounds')
+        self.pickup_snd = pg.mixer.Sound(path.join(self.snd_dir, "coin_pickup.mp3"))
+
         self.map = Map(path.join(self.game_dir, map))
 
         # want to see if file exists and create if not
@@ -68,7 +71,6 @@ class Game:
         self.all_coins = pg.sprite.Group()
         # instantiate player here
         
-        self.wall = Wall(self,5,0)
         print(self.map.data)
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
@@ -82,7 +84,8 @@ class Game:
             for col, tile in enumerate(tiles):
                 if tile == 'P':
                     self.player = Player(self, col, row)
-
+        pg.mixer.music.load(path.join(self.snd_dir, "background_music.ogg"))
+        pg.mixer.music.play(loops=-1)
     def run(self):
         while self.running:
             # sets the delta time property and runs the tick function at FPS/1000
@@ -94,6 +97,8 @@ class Game:
     def events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                with open(path.join(self.game_dir, self.game_save_file), 'w') as f:
+                    f.write(str(self.score))
                 if self.playing:
                     self.playing = False
                 self.running = False
@@ -117,6 +122,7 @@ class Game:
         self.all_sprites.draw(self.screen)
         self.draw_text("Frames per second: " + str(floor(1/self.dt)), 24, WHITE, WIDTH/2, HEIGHT/4)
         self.draw_text(f"Coins:{self.player.coins} ", 24, WHITE, WIDTH/2, HEIGHT/9)
+        self.draw_text(f"High score:{self.highscore} ", 24, WHITE, WIDTH/2, HEIGHT/12)
         pg.display.flip()
 
 if __name__ == "__main__":
