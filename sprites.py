@@ -4,6 +4,8 @@ from settings import *
 from utils import *
 from os import path
 
+from random import randint
+
 vec = pg.math.Vector2
 
 # create player class with Sprite as super Class
@@ -51,13 +53,9 @@ class Player(Sprite):
         self.image.set_colorkey(BLACK)
         # self.image.fill(WHITE)
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
         # self.vx, self.vy = 0,0
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE
-        # self.x = x * TILESIZE
-        # self.y = y * TILESIZE
         self.hit_rect = PLAYER_HIT_RECT
         # animation stuff
         #start with current frames and last update at zero so we can cycle through animations
@@ -86,6 +84,7 @@ class Player(Sprite):
         if keys[pg.K_s]:
             # self.vy = PLAYER_SPEED
             self.vel.y = PLAYER_SPEED
+        
     def jump(self):
         pass
     def load_images(self):
@@ -118,7 +117,15 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, self.game.all_coins, True)
         if hits:
             self.coins+= 1
-            print(f"I have {self.coins} coins")
+            self.game.score += 1
+            self.game.pickup_snd.play()
+            for i in range(100):
+            
+                #print(f"I have {self.coins} coins")
+                Particle(self.game, hits[0].rect.x, hits[0].rect.y)
+                hits[0].kill()
+                print(str(len(self.game.all_particles)))
+
         self.hit_rect.centerx = self.pos.x
         collide_with_walls(self, self.game.all_walls, 'x')
         self.hit_rect.centery = self.pos.y
@@ -184,16 +191,42 @@ class Mob(Sprite):
             direction = direction.normalize()
         self.vel = direction
 
-    # def update(self):
-    #     self.animate()
-    #     self.follow(self.game.player)
-    #     self.pos += self.vel * self.speed * self.game.dt
-    #     self.hit_rect.centerx = self.pos.x
-    #     collide_with_walls(self, self.game.all_walls, 'x')
-    #     self.hit_rect.centery = self.pos.y
-    #     collide_with_walls(self, self.game.all_walls, 'y')
-    #     self.rect.center = self.pos
-        
+    def update(self):
+        self.animate()
+        self.follow(self.game.player)
+        self.pos += self.vel * self.speed * self.game.dt
+        self.hit_rect.centerx = self.pos.x
+        collide_with_walls(self, self.game.all_walls, 'x')
+        self.hit_rect.centery = self.pos.y
+        collide_with_walls(self, self.game.all_walls, 'y')
+        self.rect.center = self.pos
+
+class Particle(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_particles
+        Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE/4, TILESIZE/4))
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.vel = vec(0,0)
+        self.pos = vec(x,y)
+        self.rect.center = self.pos
+        self.speed = 15
+        self.countdown = Cooldown()
+        self.countdown.event_time = floor(pg.time.get_ticks()/1000)
+        print("I created a particle")
+        print(self.rect.x)
+        print(self.rect.y)
+
+    def update(self):
+        self.countdown.ticking()
+        self.pos += self.vel * self.speed * self.game.dt
+        if self.countdown.delta > 1:
+            self.kill()
+            print(str(len(self.game.all_particles)))
+        self.rect.x =self.pos.x
+        self.rect.y = self.pos.y
 
 class Wall(Sprite):
     def __init__(self, game, x, y):
@@ -203,14 +236,9 @@ class Wall(Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.vx, self.vy = 0,0
-        self.x = x * TILESIZE
-        self.y = y * TILESIZE
-        self.rect.x = self.x
-        self.rect.y = self.y
-        print("wall instance created")
+        self.vel = vec(0,0)
+        self.pos = vec(x,y) * TILESIZE
+        self.rect.center = self.pos
 
 class Coin(Sprite):
     def __init__(self, game, x, y):
@@ -225,6 +253,5 @@ class Coin(Sprite):
         self.vel = vec(0,0)
         self.pos = vec(x,y) *TILESIZE
         self.rect.center = self.pos
-        print("coin instance created")
 
     # new object type Wall that is green

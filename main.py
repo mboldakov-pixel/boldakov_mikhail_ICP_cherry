@@ -69,6 +69,7 @@ class Game:
         self.all_walls = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()
         self.all_coins = pg.sprite.Group()
+        self.all_particles = pg.sprite.Group()
         # instantiate player here
         
         print(self.map.data)
@@ -98,7 +99,8 @@ class Game:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 with open(path.join(self.game_dir, self.game_save_file), 'w') as f:
-                    f.write(str(self.score))
+                    if self.highscore < self.score:
+                        f.write(str(self.score))
                 if self.playing:
                     self.playing = False
                 self.running = False
